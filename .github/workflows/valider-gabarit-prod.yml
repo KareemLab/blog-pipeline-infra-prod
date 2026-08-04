@@ -1,0 +1,222 @@
+name: Validation du gabarit de production
+
+on:
+  repository_dispatch:
+    types:
+      - prod_gabarit_validated
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prod-gabarit-${{ github.event.client_payload.source.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  valider-gabarit-prod-recu:
+    name: "Valider le gabarit prod reçu"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt prod
+        uses: actions/checkout@v4
+
+      - name: Contrôler le gabarit envoyé par la préprod
+        shell: bash
+        env:
+          CLIENT_PAYLOAD_JSON: ${{ toJson(github.event.client_payload) }}
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+
+          payload = json.loads(os.environ["CLIENT_PAYLOAD_JSON"])
+
+          def fail(message):
+              print(f"::error::{message}")
+              sys.exit(1)
+
+          def read_path(path):
+              value = payload
+
+              for part in path.split("."):
+                  if isinstance(value, list):
+                      try:
+                          value = value[int(part)]
+                      except (ValueError, IndexError):
+                          fail(f"Chemin absent ou invalide : {path}")
+                  elif isinstance(value, dict) and part in value:
+                      value = value[part]
+                  else:
+                      fail(f"Champ absent : {path}")
+
+              return value
+
+          expected_values = {
+              "schema_version": 1,
+
+              "source.repository": "KareemLab/homelab-blog-preprod",
+              "source.ref": "main",
+
+              "cluster.master_count": 1,
+              "cluster.worker_count": 2,
+
+              "cluster.nodes.0.name": "rke2-master-1",
+              "cluster.nodes.0.role": "master",
+              "cluster.nodes.0.cpu": "2",
+              "cluster.nodes.0.memory": "5017416Ki",
+
+              "cluster.nodes.1.name": "rke2-worker-1",
+              "cluster.nodes.1.role": "worker-app",
+              "cluster.nodes.1.cpu": "2",
+              "cluster.nodes.1.memory": "2510440Ki",
+
+              "cluster.nodes.2.name": "rke2-worker-2",
+              "cluster.nodes.2.role": "worker-bdd",
+              "cluster.nodes.2.cpu": "2",
+              "cluster.nodes.2.memory": "3993484Ki",
+
+              "application.namespace": "lab-k8s",
+              "application.fpm_replicas": 7,
+              "application.nginx_replicas": 2,
+              "application.worker_node": "rke2-worker-1",
+
+              "application.validated_load.simultaneous_connections": 125,
+              "application.validated_load.articles_per_connection": 3,
+              "application.validated_load.successful_requests": 375,
+
+              "postgresql.primary_replicas": 1,
+              "postgresql.read_replicas": 1,
+              "postgresql.primary_worker_node": "rke2-worker-2",
+
+              "postgresql.validated_stress.passes": 3,
+              "postgresql.validated_stress.writers_per_pass": 20,
+              "postgresql.validated_stress.batch_size": 100,
+              "postgresql.validated_stress.rows_min": 37000,
+              "postgresql.validated_stress.rows_max": 46000,
+              "postgresql.validated_stress.worker_cpu_max_percent": 80,
+              "postgresql.validated_stress.worker_memory_max_percent": 80,
+          }
+
+          for path, expected in expected_values.items():
+              observed = read_path(path)
+
+              if observed != expected:
+                  fail(
+                      f"{path} : observé={observed!r}, "
+                      f"attendu={expected!r}"
+                  )
+
+              print(f"PASS - {path} = {observed}")
+
+          nodes = read_path("cluster.nodes")
+
+          if len(nodes) != 3:
+              fail(
+                  "cluster.nodes doit contenir exactement "
+                  f"3 nœuds, observé={len(nodes)}"
+              )
+
+          source_sha = read_path("source.commit_sha")
+
+          if not re.fullmatch(r"[0-9a-fA-F]{40}", source_sha):
+              fail(f"SHA source invalide : {source_sha}")
+
+          source_run_id = str(read_path("source.run_id"))
+          source_run_url = read_path("source.run_url")
+
+          expected_run_url = (
+              "https://github.com/KareemLab/homelab-blog-preprod/"
+              f"actions/runs/{source_run_id}"
+          )
+
+          if source_run_url != expected_run_url:
+              fail(
+                  f"URL du run invalide : observé={source_run_url}, "
+                  f"attendu={expected_run_url}"
+              )
+
+          image_tag = read_path("images.tag")
+
+          if not re.fullmatch(r"prod-[0-9]+", image_tag):
+              fail(f"Tag d'image invalide : {image_tag}")
+
+          expected_images = {
+              "images.fpm":
+                  f"kareemdev2/blog-back-fpm:{image_tag}",
+              "images.nginx":
+                  f"kareemdev2/blog-back-nginx:{image_tag}",
+              "images.node":
+                  f"kareemdev2/blog-back-node:{image_tag}",
+          }
+
+          for path, expected in expected_images.items():
+              observed = read_path(path)
+
+              if observed != expected:
+                  fail(
+                      f"{path} : observé={observed!r}, "
+                      f"attendu={expected!r}"
+                  )
+
+              print(f"PASS - {path} = {observed}")
+
+          summary_path = os.environ["GITHUB_STEP_SUMMARY"]
+
+          with open(summary_path, "a", encoding="utf-8") as summary:
+              summary.write("## Gabarit de production reçu et validé\n\n")
+              summary.write("| Élément | Valeur reçue |\n")
+              summary.write("|---|---|\n")
+              summary.write(
+                  f"| Dépôt source | "
+                  f"`{read_path('source.repository')}` |\n"
+              )
+              summary.write(
+                  f"| Commit source | `{source_sha}` |\n"
+              )
+              summary.write(
+                  f"| Run préprod | [{source_run_id}]"
+                  f"({source_run_url}) |\n"
+              )
+              summary.write("| Cluster | 1 master / 2 workers |\n")
+              summary.write("| Profil applicatif | 7 FPM / 2 Nginx |\n")
+              summary.write(
+                  "| Charge applicative | "
+                  "125 connexions / 375 succès |\n"
+              )
+              summary.write(
+                  "| PostgreSQL | 1 primary / 1 read |\n"
+              )
+              summary.write(
+                  "| Stress BDD | W20 × 3, lots de 100 |\n"
+              )
+              summary.write(
+                  "| Plage BDD validée | "
+                  "37 000–46 000 lignes |\n"
+              )
+              summary.write(
+                  f"| Tag des images | `{image_tag}` |\n"
+              )
+              summary.write(
+                  f"| Image FPM | "
+                  f"`{read_path('images.fpm')}` |\n"
+              )
+              summary.write(
+                  f"| Image Nginx | "
+                  f"`{read_path('images.nginx')}` |\n"
+              )
+              summary.write(
+                  f"| Image Node | "
+                  f"`{read_path('images.node')}` |\n"
+              )
+              summary.write("\n")
+              summary.write(
+                  "**Aucun manifest de production n’a été modifié.**\n"
+              )
+
+          print("PASS - gabarit prod entièrement validé")
+          PY
