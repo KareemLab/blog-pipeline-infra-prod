@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pg-lab
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:KareemLab/homelab-blog-preprod.git
+    targetRevision: main
+    path: apps/postgresql-preprod
+    helm:
+      releaseName: pg-lab
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: lab-k8s

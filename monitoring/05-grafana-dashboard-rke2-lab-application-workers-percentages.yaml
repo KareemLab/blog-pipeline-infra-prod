@@ -1,0 +1,1999 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-rke2-lab-application-workers-percentages
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  rke2-lab-application-workers-percentages-dashboard.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "pluginVersion": "11.0.0",
+          "title": "Application workers",
+          "type": "text",
+          "options": {
+            "mode": "markdown",
+            "content": "# RKE2 Lab - Application Workers - Pourcentages\n\n| Élément | Filtre | Objectif |\n|---|---|---|\n| Workers applicatifs | `workload-role=app` | Exclure master et worker PostgreSQL dédié |\n| FPM | `blog-back-fpm-.*` | Suivre chaque pod et le total des replicas |\n| Nginx | `blog-back-nginx-.*` | Suivre le pod reverse proxy applicatif |\n| PostgreSQL reader local app | `pg-lab-postgresql-read-0` | Suivre le reader présent sur worker applicatif |\n\nLes pourcentages sont calculés par rapport à la capacité Kubernetes `allocatable` de la node qui héberge le pod."
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 0,
+            "y": 4
+          },
+          "id": 2,
+          "pluginVersion": "11.0.0",
+          "title": "Workers applicatifs",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "count(kube_node_labels{label_workload_role=\"app\"})",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 4,
+            "y": 4
+          },
+          "id": 3,
+          "pluginVersion": "11.0.0",
+          "title": "FPM replicas Ready",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "count(kube_pod_status_ready{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\",condition=\"true\"} * on(namespace,pod) group_left(node) kube_pod_info{namespace=\"lab-k8s\"} * on(node) group_left() kube_node_labels{label_workload_role=\"app\"})",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "min": 0,
+              "max": 100,
+              "decimals": 3,
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "color-background"
+                },
+                "inspect": false
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "pod"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 155
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "auto"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "node"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 95
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "auto"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "pct_node"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 80
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 3
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 0,
+            "y": 13
+          },
+          "id": 4,
+          "pluginVersion": "11.0.0",
+          "title": "CPU pod max application",
+          "type": "table",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "topk(1, 100 * sum by (pod, node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"})))",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm",
+            "footer": {
+              "show": true,
+              "reducer": [
+                "lastNotNull"
+              ],
+              "countRows": false,
+              "fields": "pct_node"
+            }
+          },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "__name__": true,
+                  "container": true,
+                  "endpoint": true,
+                  "instance": true,
+                  "job": true,
+                  "namespace": true,
+                  "service": true,
+                  "uid": true
+                },
+                "renameByName": {
+                  "pod": "pod",
+                  "node": "node",
+                  "Value": "pct_node"
+                },
+                "indexByName": {
+                  "pod": 0,
+                  "node": 1,
+                  "Value": 2
+                }
+              }
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "min": 0,
+              "max": 100,
+              "decimals": 3,
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "color-background"
+                },
+                "inspect": false
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "pod"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 155
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "auto"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "node"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 95
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "auto"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "pct_node"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 80
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 3
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 6,
+            "y": 13
+          },
+          "id": 5,
+          "pluginVersion": "11.0.0",
+          "title": "RAM pod max application",
+          "type": "table",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "topk(1, 100 * sum by (pod, node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"})))",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm",
+            "footer": {
+              "show": true,
+              "reducer": [
+                "lastNotNull"
+              ],
+              "countRows": false,
+              "fields": "pct_node"
+            }
+          },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "__name__": true,
+                  "container": true,
+                  "endpoint": true,
+                  "instance": true,
+                  "job": true,
+                  "namespace": true,
+                  "service": true,
+                  "uid": true
+                },
+                "renameByName": {
+                  "pod": "pod",
+                  "node": "node",
+                  "Value": "pct_node"
+                },
+                "indexByName": {
+                  "pod": 0,
+                  "node": 1,
+                  "Value": 2
+                }
+              }
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 16,
+            "y": 4
+          },
+          "id": 6,
+          "pluginVersion": "11.0.0",
+          "title": "Alertes CPU > 80%",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 * sum by (node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "fpm replicas",
+              "range": false,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 * sum by (node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "nginx replicas",
+              "range": false,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 * sum by (node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "reader-0",
+              "range": false,
+              "refId": "C"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 20,
+            "y": 4
+          },
+          "id": 7,
+          "pluginVersion": "11.0.0",
+          "title": "Alertes RAM > 80%",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 * sum by (node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "fpm replicas",
+              "range": false,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 * sum by (node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "nginx replicas",
+              "range": false,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 * sum by (node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "reader-0",
+              "range": false,
+              "refId": "C"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 18
+          },
+          "id": 8,
+          "pluginVersion": "11.0.0",
+          "title": "CPU total application par worker (%)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "description": "Somme CPU FPM + Nginx + reader-0, divisée par la capacité CPU de chaque worker applicatif."
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 18
+          },
+          "id": 9,
+          "pluginVersion": "11.0.0",
+          "title": "RAM totale application par worker (%)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "description": "Somme RAM FPM + Nginx + reader-0, divisée par la mémoire allocatable de chaque worker applicatif."
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 26
+          },
+          "id": 10,
+          "pluginVersion": "11.0.0",
+          "title": "FPM - CPU par pod (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (pod, node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 26
+          },
+          "id": 11,
+          "pluginVersion": "11.0.0",
+          "title": "FPM - CPU total replicas (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "fpm total - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 34
+          },
+          "id": 12,
+          "pluginVersion": "11.0.0",
+          "title": "FPM - RAM par pod (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (pod, node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 34
+          },
+          "id": 13,
+          "pluginVersion": "11.0.0",
+          "title": "FPM - RAM totale replicas (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "fpm total - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 42
+          },
+          "id": 14,
+          "pluginVersion": "11.0.0",
+          "title": "Nginx - CPU/RAM (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "cpu nginx - {{ node }}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "ram nginx - {{ node }}",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 42
+          },
+          "id": 15,
+          "pluginVersion": "11.0.0",
+          "title": "PostgreSQL reader-0 - CPU/RAM (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "cpu reader-0 - {{ node }}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "ram reader-0 - {{ node }}",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 50
+          },
+          "id": 16,
+          "pluginVersion": "11.0.0",
+          "title": "Tous les pods application - CPU par pod (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (pod, node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 50
+          },
+          "id": 17,
+          "pluginVersion": "11.0.0",
+          "title": "Tous les pods application - RAM par pod (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (pod, node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 58
+          },
+          "id": 18,
+          "pluginVersion": "11.0.0",
+          "title": "FPM replicas Ready dans le temps",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum by (node) (max by (namespace, pod) (kube_pod_status_ready{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\",condition=\"true\"}) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"})))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "fpm replicas ready - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 58
+          },
+          "id": 19,
+          "pluginVersion": "11.0.0",
+          "title": "Seuils et lecture",
+          "type": "text",
+          "options": {
+            "mode": "markdown",
+            "content": "## Seuils\n\n- Vert: inférieur à 80 %.\n- Orange: à partir de 80 %.\n- Rouge: à partir de 90 %.\n- Les panneaux `Alertes` fonctionnent comme `DiskPressure`: `OK` = 0, `ALERTE` = 1.\n\n## Lecture pratique\n\n- `FPM - par pod` sert à voir si un replica individuel consomme trop.\n- `FPM - total replicas` sert à mesurer l’impact cumulé quand tu passes à 2 ou 3 replicas.\n- Les calculs utilisent `kube_node_status_allocatable`, donc la base de calcul est la capacité réellement utilisable par Kubernetes."
+          }
+        },
+        {
+          "id": 20,
+          "title": "CPU max valeur",
+          "type": "stat",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "decimals": 3,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "topk(1, 100 * sum by (pod, node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"})))",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value"
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 6,
+            "x": 0,
+            "y": 10
+          },
+          "pluginVersion": "11.0.0"
+        },
+        {
+          "id": 21,
+          "title": "RAM max valeur",
+          "type": "stat",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "decimals": 3,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "topk(1, 100 * sum by (pod, node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-fpm-.*|blog-back-nginx-.*|pg-lab-postgresql-read-0\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"})))",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value"
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 6,
+            "x": 6,
+            "y": 10
+          },
+          "pluginVersion": "11.0.0"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 8,
+            "y": 4
+          },
+          "id": 22,
+          "pluginVersion": "11.0.0",
+          "title": "Nginx replicas Ready",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "count(kube_pod_status_ready{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",condition=\"true\"} * on(namespace,pod) group_left(node) kube_pod_info{namespace=\"lab-k8s\"} * on(node) group_left() kube_node_labels{label_workload_role=\"app\"})",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 72
+          },
+          "id": 23,
+          "pluginVersion": "11.0.0",
+          "title": "Nginx - CPU par pod (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (pod, node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 72
+          },
+          "id": 24,
+          "pluginVersion": "11.0.0",
+          "title": "Nginx - CPU total replicas (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",container!=\"\",container!=\"POD\",image!=\"\"}[5m]) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "nginx total - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 80
+          },
+          "id": 25,
+          "pluginVersion": "11.0.0",
+          "title": "Nginx - RAM par pod (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (pod, node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 80
+          },
+          "id": 26,
+          "pluginVersion": "11.0.0",
+          "title": "Nginx - RAM totale replicas (% node)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by (node) (container_memory_working_set_bytes{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",container!=\"\",container!=\"POD\",image!=\"\"} * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))) / on(node) group_left sum by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"} * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"}))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "nginx total - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 88
+          },
+          "id": 27,
+          "pluginVersion": "11.0.0",
+          "title": "Nginx replicas Ready dans le temps",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum by (node) (max by (namespace, pod) (kube_pod_status_ready{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\",condition=\"true\"}) * on(namespace,pod) group_left(node) (max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\",pod=~\"blog-back-nginx-.*\"}) * on(node) group_left() max by (node) (kube_node_labels{label_workload_role=\"app\"})))",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "nginx replicas ready - {{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": [
+        "rke2",
+        "lab",
+        "application",
+        "workers",
+        "percentages"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-30m",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "RKE2 Lab - Application Workers - Pourcentages",
+      "uid": "rke2-lab-application-workers-percentages",
+      "version": 1,
+      "weekStart": ""
+    }

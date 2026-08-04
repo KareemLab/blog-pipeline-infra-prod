@@ -1,0 +1,227 @@
+# RBAC maintenance-monitoring
+#
+# Objectif :
+# - profil de maintenance contrôlée ;
+# - reprend les droits de lecture du technicien-monitoring ;
+# - ajoute uniquement des actions limitées sur les deployments applicatifs ;
+# - aucun accès aux Secrets ;
+# - aucun accès aux objets RBAC ;
+# - aucun pods/exec ;
+# - aucun pods/delete ;
+# - aucune mutation sur PostgreSQL ;
+# - aucune mutation sur Jobs/CronJobs ;
+# - aucun accès d'administration kube-system.
+#
+# Périmètre applicatif autorisé :
+# - namespace lab-k8s ;
+# - deployments blog-back-fpm et blog-back-nginx uniquement.
+#
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: maintenance-monitoring
+  namespace: monitoring
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: maintenance-monitoring-cluster-readonly
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["metrics.k8s.io"]
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: maintenance-monitoring-cluster-readonly
+subjects:
+  - kind: ServiceAccount
+    name: maintenance-monitoring
+    namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: maintenance-monitoring-cluster-readonly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: maintenance-monitoring-namespace-readonly
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - services
+      - endpoints
+      - events
+      - configmaps
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: [""]
+    resources:
+      - pods/log
+    verbs:
+      - get
+  - apiGroups: ["events.k8s.io"]
+    resources:
+      - events
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["discovery.k8s.io"]
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["argoproj.io"]
+    resources:
+      - applications
+      - appprojects
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["monitoring.coreos.com"]
+    resources:
+      - prometheuses
+      - servicemonitors
+      - podmonitors
+      - prometheusrules
+      - alertmanagers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["metrics.k8s.io"]
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: maintenance-monitoring-readonly
+  namespace: monitoring
+subjects:
+  - kind: ServiceAccount
+    name: maintenance-monitoring
+    namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: maintenance-monitoring-namespace-readonly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: maintenance-monitoring-readonly
+  namespace: argocd
+subjects:
+  - kind: ServiceAccount
+    name: maintenance-monitoring
+    namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: maintenance-monitoring-namespace-readonly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: maintenance-monitoring-readonly
+  namespace: lab-k8s
+subjects:
+  - kind: ServiceAccount
+    name: maintenance-monitoring
+    namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: maintenance-monitoring-namespace-readonly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: maintenance-monitoring-app-deployments
+  namespace: lab-k8s
+rules:
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+    resourceNames:
+      - blog-back-fpm
+      - blog-back-nginx
+    verbs:
+      - get
+      - patch
+  - apiGroups: ["apps"]
+    resources:
+      - deployments/scale
+    resourceNames:
+      - blog-back-fpm
+      - blog-back-nginx
+    verbs:
+      - get
+      - patch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: maintenance-monitoring-app-deployments
+  namespace: lab-k8s
+subjects:
+  - kind: ServiceAccount
+    name: maintenance-monitoring
+    namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: maintenance-monitoring-app-deployments

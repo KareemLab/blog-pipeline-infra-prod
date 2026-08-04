@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-logical-backups
+  namespace: lab-k8s
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgresql-logical-backup
+  namespace: lab-k8s
+spec:
+  schedule: "15 12 * * *"
+  timeZone: "Europe/Paris"
+  startingDeadlineSeconds: 60
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: postgresql-logical-backup
+            app.kubernetes.io/component: backup
+        spec:
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: rke2-worker-2
+          containers:
+            - name: pg-dump
+              image: registry-1.docker.io/bitnami/postgresql:latest
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: PGHOST
+                  value: pg-lab-postgresql-read
+                - name: PGPORT
+                  value: "5432"
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: blog-back-secret
+                      key: DATABASE_NAME
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: blog-back-secret
+                      key: DATABASE_USER
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: blog-back-secret
+                      key: DATABASE_PASSWORD
+              command:
+                - /bin/bash
+                - -lc
+                - |
+                  set -euo pipefail
+
+                  BACKUP_DIR="/backups"
+                  TIMESTAMP="$(TZ='CET-1CEST,M3.5.0,M10.5.0/3' date +%Y%m%d-%H%M%S)"
+                  BACKUP_FILE="${BACKUP_DIR}/${PGDATABASE}-${TIMESTAMP}.dump"
+
+                  echo "Starting PostgreSQL logical backup"
+                  echo "Database: ${PGDATABASE}"
+                  echo "Host: ${PGHOST}"
+                  echo "Output: ${BACKUP_FILE}"
+
+                  pg_dump \
+                    -h "${PGHOST}" \
+                    -p "${PGPORT}" \
+                    -U "${PGUSER}" \
+                    -d "${PGDATABASE}" \
+                    -F c \
+                    -f "${BACKUP_FILE}"
+
+                  echo "Backup completed"
+                  ls -lh "${BACKUP_FILE}"
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: postgresql-logical-backups

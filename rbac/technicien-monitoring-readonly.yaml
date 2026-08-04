@@ -1,0 +1,208 @@
+# RBAC technicien-monitoring
+#
+# Objectif :
+# - profil lecture seule pour un technicien monitoring / exploitation ;
+# - visibilité sur l'état du cluster, Argo CD, Grafana/Prometheus et l'application ;
+# - aucun droit d'administration ;
+# - aucun droit de modification ;
+# - aucun accès aux Secrets ;
+# - aucun droit de backup ou de restauration PostgreSQL ;
+# - aucun droit de lecture ou modification des objets RBAC Kubernetes.
+#
+# Modèle d'accès :
+# - seul l'administrateur a accès au dépôt Git et au fichier source RBAC ;
+# - le technicien monitoring n'a pas accès au dépôt Git ;
+# - une fois appliqué, ce RBAC ne permet pas au technicien de lire les Roles,
+#   RoleBindings, ClusterRoles, ClusterRoleBindings ou ServiceAccounts.
+#
+# Backup / restore :
+# - le technicien peut voir les Jobs et CronJobs ;
+# - il ne peut pas créer, patcher, relancer ou supprimer un Job ;
+# - il ne peut pas lancer de backup PostgreSQL ;
+# - il ne peut pas lancer de restauration PostgreSQL ;
+# - il ne peut pas créer de Pod temporaire ;
+# - il ne peut pas exécuter de commande dans un Pod.
+#
+# Actions explicitement non autorisées :
+# - get/list/watch secrets
+# - get/list/watch roles
+# - get/list/watch rolebindings
+# - get/list/watch clusterroles
+# - get/list/watch clusterrolebindings
+# - get/list/watch serviceaccounts
+# - create/update/patch/delete jobs
+# - create/update/patch/delete cronjobs
+# - create/delete pods
+# - pods/exec
+# - patch job de restauration suspendu
+# - lancement manuel d'un backup ou d'une restauration
+#
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: technicien-monitoring
+  namespace: monitoring
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: technicien-monitoring-cluster-readonly
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["metrics.k8s.io"]
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: technicien-monitoring-cluster-readonly
+subjects:
+  - kind: ServiceAccount
+    name: technicien-monitoring
+    namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: technicien-monitoring-cluster-readonly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: technicien-monitoring-namespace-readonly
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - services
+      - endpoints
+      - events
+      - configmaps
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: [""]
+    resources:
+      - pods/log
+    verbs:
+      - get
+  - apiGroups: ["events.k8s.io"]
+    resources:
+      - events
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["discovery.k8s.io"]
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["argoproj.io"]
+    resources:
+      - applications
+      - appprojects
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["monitoring.coreos.com"]
+    resources:
+      - prometheuses
+      - servicemonitors
+      - podmonitors
+      - prometheusrules
+      - alertmanagers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["metrics.k8s.io"]
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: technicien-monitoring-readonly
+  namespace: monitoring
+subjects:
+  - kind: ServiceAccount
+    name: technicien-monitoring
+    namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: technicien-monitoring-namespace-readonly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: technicien-monitoring-readonly
+  namespace: argocd
+subjects:
+  - kind: ServiceAccount
+    name: technicien-monitoring
+    namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: technicien-monitoring-namespace-readonly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: technicien-monitoring-readonly
+  namespace: lab-k8s
+subjects:
+  - kind: ServiceAccount
+    name: technicien-monitoring
+    namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: technicien-monitoring-namespace-readonly

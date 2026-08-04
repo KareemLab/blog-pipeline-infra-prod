@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog-back-fpm
+  namespace: lab-k8s
+  labels:
+    app.kubernetes.io/name: blog-back-fpm
+    app.kubernetes.io/part-of: blog-back
+spec:
+  replicas: 7
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: blog-back-fpm
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: blog-back-fpm
+        app.kubernetes.io/part-of: blog-back
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: workload-role
+                    operator: In
+                    values:
+                      - app
+      imagePullSecrets:
+        - name: kuberneteshub
+      containers:
+        - name: fpm
+          image: kareemdev2/blog-back-fpm:prod-85
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - name: fpm
+              containerPort: 9000
+          envFrom:
+            - secretRef:
+                name: blog-back-secret
+          volumeMounts:
+            - name: env-file
+              mountPath: /app/.env
+              subPath: .env
+              readOnly: true
+            - name: assets
+              mountPath: /app/public/build
+            - name: uploads
+              mountPath: /app/public/uploads/images
+      volumes:
+        - name: env-file
+          secret:
+            secretName: blog-back-env-file
+        - name: assets
+          persistentVolumeClaim:
+            claimName: blog-back-assets-nfs
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: blog-back-uploads-nfs
+

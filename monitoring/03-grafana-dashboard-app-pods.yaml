@@ -1,0 +1,170 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-app-pods
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  app-pods-dashboard.json: |
+    {
+      "id": null,
+      "uid": "rke2-lab-app-pods",
+      "title": "RKE2 Lab - Application Pods",
+      "tags": [
+        "rke2",
+        "lab",
+        "application",
+        "pods"
+      ],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "10s",
+      "time": {
+        "from": "now-30m",
+        "to": "now"
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "CPU par Pod - namespace lab-k8s",
+          "type": "timeseries",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "cores"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "(sum by(namespace,pod) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\", container!=\"\", container!=\"POD\"}[5m]))) * on(namespace,pod) group_left(node) max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\"})",
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "refId": "A"
+            }
+          ],
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 2,
+          "title": "RAM par Pod - namespace lab-k8s",
+          "type": "timeseries",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "(sum by(namespace,pod) (container_memory_working_set_bytes{namespace=\"lab-k8s\", container!=\"\", container!=\"POD\"})) * on(namespace,pod) group_left(node) max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\"})",
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "refId": "A"
+            }
+          ],
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 8
+          }
+        },
+        {
+          "id": 3,
+          "title": "CPU PostgreSQL",
+          "type": "timeseries",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "cores"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "(sum by(namespace,pod) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\", pod=~\"pg-lab-postgresql.*\", container!=\"\", container!=\"POD\"}[5m]))) * on(namespace,pod) group_left(node) max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\"})",
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "refId": "A"
+            }
+          ],
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 16
+          }
+        },
+        {
+          "id": 4,
+          "title": "RAM PostgreSQL",
+          "type": "timeseries",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "(sum by(namespace,pod) (container_memory_working_set_bytes{namespace=\"lab-k8s\", pod=~\"pg-lab-postgresql.*\", container!=\"\", container!=\"POD\"})) * on(namespace,pod) group_left(node) max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\"})",
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "refId": "A"
+            }
+          ],
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 16
+          }
+        },
+        {
+          "id": 5,
+          "title": "CPU par composant applicatif",
+          "type": "timeseries",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "cores"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "(sum by(namespace,pod) (rate(container_cpu_usage_seconds_total{namespace=\"lab-k8s\", pod=~\"blog-back-fpm.*|blog-back-nginx.*|pg-lab-postgresql.*\", container!=\"\", container!=\"POD\"}[5m]))) * on(namespace,pod) group_left(node) max by (namespace, pod, node) (kube_pod_info{namespace=\"lab-k8s\"})",
+              "legendFormat": "{{ pod }} - {{ node }}",
+              "refId": "A"
+            }
+          ],
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 24
+          }
+        }
+      ]
+    }

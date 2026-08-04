@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: blog-back-uploads
+  namespace: lab-k8s
+  labels:
+    app.kubernetes.io/name: blog-back-uploads
+    app.kubernetes.io/part-of: blog-back
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: blog-preprod
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: git@github.com:KareemLab/homelab-blog-preprod.git
+    targetRevision: main
+    path: apps/blog-preprod
+    directory:
+      recurse: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: lab-k8s

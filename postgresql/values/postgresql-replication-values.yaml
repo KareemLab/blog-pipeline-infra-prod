@@ -1,0 +1,57 @@
+architecture: replication
+
+auth:
+  enablePostgresUser: true
+  existingSecret: blog-back-secret
+
+  secretKeys:
+    adminPasswordKey: POSTGRES_PASSWORD
+    userPasswordKey: POSTGRES_PASSWORD
+    replicationPasswordKey: POSTGRES_REPLICATION_PASSWORD
+
+  username: iksstudent
+  database: blogkubernetesdb
+  replicationUsername: repl_user
+
+primary:
+  nodeSelector:
+    kubernetes.io/hostname: rke2-worker-2
+
+  persistence:
+    enabled: true
+    storageClass: local-path
+    size: 5Gi
+
+  resourcesPreset: "nano"
+
+readReplicas:
+  replicaCount: 2
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - rke2-worker-1
+                  - rke2-worker-2
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/instance: pg-lab
+              app.kubernetes.io/name: postgresql
+              app.kubernetes.io/component: read
+          topologyKey: kubernetes.io/hostname
+
+  persistence:
+    enabled: true
+    storageClass: local-path
+    size: 5Gi
+
+  resourcesPreset: "nano"
+
+metrics:
+  enabled: true

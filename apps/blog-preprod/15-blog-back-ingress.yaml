@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blog-back-ingress
+  namespace: lab-k8s
+spec:
+  namespace: lab-k8s
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: blog.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blog-back-nginx
+                port:
+                  number: 80
+    - host: blog.k8s.test
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blog-back-nginx
+                port:
+                  number: 80

@@ -1,0 +1,121 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-real-restore
+  namespace: lab-k8s
+  labels:
+    app.kubernetes.io/name: postgresql-real-restore
+    app.kubernetes.io/component: restore
+  annotations:
+    restore.homelab/mode: "real-database-restore"
+    restore.homelab/safety: "job-suspended-by-default"
+    restore.homelab/prerequisite: "scale-application-down-before-unsuspend"
+spec:
+  suspend: true
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: postgresql-real-restore
+        app.kubernetes.io/component: restore
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        kubernetes.io/hostname: rke2-worker-2
+      containers:
+        - name: pg-restore
+          image: registry-1.docker.io/bitnami/postgresql:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PGHOST
+              value: pg-lab-postgresql-primary
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: blog-back-secret
+                  key: DATABASE_NAME
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: blog-back-secret
+                  key: DATABASE_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: blog-back-secret
+                  key: DATABASE_PASSWORD
+            - name: BACKUP_FILE
+              value: /backups/CHANGE_ME.dump
+            - name: RESTORE_CONFIRMATION
+              value: CHANGE_ME_TO_RUN
+          command:
+            - /bin/bash
+            - -lc
+            - |
+              set -euo pipefail
+
+              echo "=== PostgreSQL real restore job ==="
+              echo "Target host: ${PGHOST}"
+              echo "Target database: ${PGDATABASE}"
+              echo "Backup file: ${BACKUP_FILE}"
+
+              if [ "${RESTORE_CONFIRMATION}" != "YES_RESTORE_BLOGKUBERNETESDB" ]; then
+                echo "ERROR: RESTORE_CONFIRMATION is not valid."
+                echo "This Job is protected against accidental execution."
+                echo "Set RESTORE_CONFIRMATION=YES_RESTORE_BLOGKUBERNETESDB only when you really want to restore the real database."
+                exit 1
+              fi
+
+              if [ "${BACKUP_FILE}" = "/backups/CHANGE_ME.dump" ]; then
+                echo "ERROR: BACKUP_FILE still uses the placeholder value."
+                echo "Set BACKUP_FILE to a real dump path before running this Job."
+                exit 1
+              fi
+
+              echo
+              echo "=== Checking selected backup ==="
+              ls -lh "${BACKUP_FILE}"
+
+              echo
+              echo "=== Checking dump content ==="
+              pg_restore --list "${BACKUP_FILE}" | head -n 30
+
+              echo
+              echo "=== Restoring into real database ==="
+              pg_restore \
+                -h "${PGHOST}" \
+                -p "${PGPORT}" \
+                -U "${PGUSER}" \
+                -d "${PGDATABASE}" \
+                --clean \
+                --if-exists \
+                --no-owner \
+                --no-privileges \
+                "${BACKUP_FILE}"
+
+              echo
+              echo "=== Restored tables ==="
+              psql \
+                -h "${PGHOST}" \
+                -p "${PGPORT}" \
+                -U "${PGUSER}" \
+                -d "${PGDATABASE}" \
+                -tAc "
+              select schemaname || '.' || tablename
+              from pg_tables
+              where schemaname = 'public'
+              order by tablename;
+              "
+
+              echo
+              echo "=== Restore completed ==="
+          volumeMounts:
+            - name: backup-storage
+              mountPath: /backups
+              readOnly: true
+      volumes:
+        - name: backup-storage
+          persistentVolumeClaim:
+            claimName: postgresql-logical-backups

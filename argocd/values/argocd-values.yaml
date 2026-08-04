@@ -1,0 +1,22 @@
+# Values Argo CD - homelab RKE2
+# Installation volontairement minimale au départ.
+# Objectif :
+# - Argo CD placé sur rke2-worker-2
+# - pas de charge sur le master
+# - Redis interne conservé
+# - Dex et notifications désactivés au début
+
+global:
+  nodeSelector:
+    kubernetes.io/os: linux
+    kubernetes.io/hostname: rke2-worker-2
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
+
+server:
+  service:
+    type: ClusterIP

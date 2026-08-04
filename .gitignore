@@ -1,0 +1,77 @@
+# =========================
+# Secrets / credentials
+# =========================
+*.env
+.env
+.env.*
+**/*secret*.yaml
+**/*secret*.yml
+**/*password*
+**/*token*
+**/*kubeconfig*
+**/config.yaml
+
+# Fichiers applicatifs sensibles spécifiques
+manifests/01-secret-blog-back.yaml
+postgresql/values/blog-back-env-file-pg-lab.env
+postgresql/backups/blog-back-env-file-before-pg-lab.env
+archive/postgres-single-old/01b-secret-blog-back-env-file.yaml
+archive/postgres-single-old/blog-back-env-file-active-pg-lab.env
+
+# =========================
+# Helm / rendered / generated
+# =========================
+**/rendered/
+*.dry-run
+*-dry-run.txt
+
+# =========================
+# Backups locaux
+# =========================
+*.bak
+*.bak-*
+*.backup
+*.old
+
+# =========================
+# Fichiers accidentels / commandes mal tapées
+# =========================
+/-f
+/--namespace
+/NOTE:
+
+# =========================
+# OS / éditeurs
+# =========================
+.DS_Store
+.vscode/
+
+# =========================
+# CRDs / manifests volumineux générés
+# =========================
+monitoring/01-kube-prometheus-stack-crds.yaml
+
+# =========================
+# Archives locales
+# =========================
+/archive/
+
+# =========================
+# Values sensibles ou vendorisés
+# =========================
+monitoring/values/kube-prometheus-stack-values.yaml
+postgresql/values/postgresql-values-default.yaml
+
+# =========================
+# PostgreSQL backup dumps
+# =========================
+postgresql/backups/
+*.dump
+
+# Argo CD - fichiers générés localement par helm template / dry-run
+argocd/rendered/
+
+# Argo CD - brouillons de travail locaux
+argocd/drafts/
+__pycache__/
+*.pyc
