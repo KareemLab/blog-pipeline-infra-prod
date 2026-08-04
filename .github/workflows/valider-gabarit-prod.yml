@@ -183,6 +183,45 @@ jobs:
                   f"({source_run_url}) |\n"
               )
               summary.write("| Cluster | 1 master / 2 workers |\n")
+              summary.write("\n### Ressources par nœud\n\n")
+              summary.write("| Nœud | Rôle | CPU | RAM |\n")
+              summary.write("|---|---|---:|---:|\n")
+              summary.write(
+                  f"| {read_path('cluster.nodes.0.name')} | "
+                  f"{read_path('cluster.nodes.0.role')} | "
+                  f"{read_path('cluster.nodes.0.cpu')} cœurs | "
+                  f"{read_path('cluster.nodes.0.memory')} |\n"
+              )
+              summary.write(
+                  f"| {read_path('cluster.nodes.1.name')} | "
+                  f"{read_path('cluster.nodes.1.role')} | "
+                  f"{read_path('cluster.nodes.1.cpu')} cœurs | "
+                  f"{read_path('cluster.nodes.1.memory')} |\n"
+              )
+              summary.write(
+                  f"| {read_path('cluster.nodes.2.name')} | "
+                  f"{read_path('cluster.nodes.2.role')} | "
+                  f"{read_path('cluster.nodes.2.cpu')} cœurs | "
+                  f"{read_path('cluster.nodes.2.memory')} |\n"
+              )
+              summary.write(
+                  "\n### Estimation de dimensionnement production\n\n"
+              )
+              summary.write(
+                  "| Workers applicatifs | Inscriptions estimées |\n"
+              )
+              summary.write("|---:|---:|\n")
+              summary.write("| 1 | 125 |\n")
+              summary.write("| 2 | 250 |\n")
+              summary.write("| 4 | 500 |\n")
+              summary.write("| 8 | 1 000 |\n")
+              summary.write(
+                  "\n_Estimation linéaire de production basée sur "
+                  "125 inscriptions par worker applicatif._\n\n"
+              )
+              summary.write("### Profil préprod validé\n\n")
+              summary.write("| Élément | Valeur reçue |\n")
+              summary.write("|---|---|\n")
               summary.write("| Profil applicatif | 7 FPM / 2 Nginx |\n")
               summary.write(
                   "| Charge applicative | "
