@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pg-production
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: git@github.com:KareemLab/blog-pipeline-infra-prod.git
+    targetRevision: main
+    path: production-manifest/postgresql
+    helm:
+      releaseName: pg-production
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: blog-production

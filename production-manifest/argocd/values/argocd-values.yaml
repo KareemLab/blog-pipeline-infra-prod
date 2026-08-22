@@ -1,0 +1,23 @@
+# Values Argo CD - production GCP RKE2
+# Aligné sur la préproduction :
+# - Argo CD sur rke2-worker-2
+# - pas de charge sur le master
+# - Redis interne conservé
+# - Dex désactivé
+# - notifications désactivées
+# - argocd-server exposé en ClusterIP
+
+global:
+  nodeSelector:
+    kubernetes.io/os: linux
+    kubernetes.io/hostname: rke2-worker-2
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
+
+server:
+  service:
+    type: ClusterIP
