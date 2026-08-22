@@ -1,0 +1,64 @@
+grafana:
+  enabled: true
+  adminPassword: devopsdevops
+
+  initChownData:
+    enabled: false
+
+  service:
+    type: ClusterIP
+
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+
+  nodeSelector:
+    kubernetes.io/hostname: rke2-worker-2
+
+prometheus:
+  prometheusSpec:
+    nodeSelector:
+      kubernetes.io/hostname: rke2-worker-2
+
+    retention: 7d
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 5Gi
+
+alertmanager:
+  enabled: false
+
+prometheusOperator:
+  nodeSelector:
+    kubernetes.io/hostname: rke2-worker-2
+
+kube-state-metrics:
+  nodeSelector:
+    kubernetes.io/hostname: rke2-worker-2
+  metricLabelsAllowlist:
+    - nodes=[workload-role]
+
+# Sur RKE2, certains composants control-plane exposent leurs métriques
+# d'une manière différente. On les désactive pour éviter des targets "Down"
+# inutiles au début du lab.
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+kubeEtcd:
+  enabled: false

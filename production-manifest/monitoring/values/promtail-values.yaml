@@ -1,0 +1,22 @@
+daemonset:
+  enabled: true
+
+deployment:
+  enabled: false
+
+config:
+  clients:
+    - url: http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push
+
+  snippets:
+    pipelineStages:
+      - cri: {}
+
+    extraRelabelConfigs:
+      - source_labels:
+          - __meta_kubernetes_namespace
+        regex: blog-production|monitoring
+        action: keep
+
+tolerations:
+  - operator: Exists

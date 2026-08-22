@@ -1,0 +1,1003 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-rke2-lab-bdd
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  rke2-lab-bdd-dashboard.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "pluginVersion": "11.0.0",
+          "title": "Base de données",
+          "type": "text",
+          "options": {
+            "mode": "markdown",
+            "content": "# RKE2 Production - BDD\n\n| Élément | Filtre | Objectif |\n|---|---|---|\n| Primary writer | `pg-production-postgresql-primary-0` | Suivre PostgreSQL writer sur `rke2-worker-2` |\n| Readers actifs | `pg-production-postgresql-read-0`, `pg-production-postgresql-read-1` | Suivre les PostgreSQL readers sur `rke2-worker-1` et `rke2-worker-2` |\n| Seuil de sécurité | `80%` | Stopper le stress avant saturation worker ou pod |\n\nLes panels PostgreSQL CPU/RAM sont calculés en pourcentage des `limits` du container `postgresql`. Les panels workers utilisent les métriques node-exporter et la capacité Kubernetes `allocatable`, afin d’être cohérents avec la surveillance de type `kubectl top nodes`."
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red"
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 0,
+            "y": 4
+          },
+          "id": 2,
+          "pluginVersion": "11.0.0",
+          "title": "Primary Ready",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_pod_status_ready{namespace=\"blog-production\",pod=\"pg-production-postgresql-primary-0\",condition=\"true\"}",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red"
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 4,
+            "y": 4
+          },
+          "id": 3,
+          "pluginVersion": "11.0.0",
+          "title": "Reader-0 Ready",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_pod_status_ready{namespace=\"blog-production\",pod=\"pg-production-postgresql-read-0\",condition=\"true\"}",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red"
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              },
+              "noValue": "No data"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 8,
+            "y": 4
+          },
+          "id": 4,
+          "pluginVersion": "11.0.0",
+          "title": "Reader-1 Ready",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_pod_status_ready{namespace=\"blog-production\",pod=\"pg-production-postgresql-read-1\",condition=\"true\"}",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "min": 0,
+              "max": 100,
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 12,
+            "y": 4
+          },
+          "id": 5,
+          "pluginVersion": "11.0.0",
+          "title": "PG CPU max % limit",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max(100 *\nsum by (pod) (\n  rate(container_cpu_usage_seconds_total{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\"}[2m])\n)\n/\nsum by (pod) (\n  kube_pod_container_resource_limits{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\",resource=\"cpu\",unit=\"core\"}\n))",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "min": 0,
+              "max": 100,
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 18,
+            "y": 4
+          },
+          "id": 6,
+          "pluginVersion": "11.0.0",
+          "title": "PG RAM max % limit",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max(100 *\nsum by (pod) (\n  container_memory_working_set_bytes{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\"}\n)\n/\nsum by (pod) (\n  kube_pod_container_resource_limits{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\",resource=\"memory\",unit=\"byte\"}\n))",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "min": 0,
+              "max": 100,
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 9
+          },
+          "id": 7,
+          "pluginVersion": "11.0.0",
+          "title": "PostgreSQL CPU % limit",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 *\nsum by (pod) (\n  rate(container_cpu_usage_seconds_total{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\"}[2m])\n)\n/\nsum by (pod) (\n  kube_pod_container_resource_limits{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\",resource=\"cpu\",unit=\"core\"}\n)",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ pod }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "min": 0,
+              "max": 100,
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 9
+          },
+          "id": 8,
+          "pluginVersion": "11.0.0",
+          "title": "PostgreSQL RAM % limit",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 *\nsum by (pod) (\n  container_memory_working_set_bytes{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\"}\n)\n/\nsum by (pod) (\n  kube_pod_container_resource_limits{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\",resource=\"memory\",unit=\"byte\"}\n)",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ pod }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "min": 0,
+              "max": 100,
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 17
+          },
+          "id": 9,
+          "pluginVersion": "11.0.0",
+          "title": "Workers CPU % node",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 *\nlabel_replace(\n  (\n    sum by(instance) (\n      rate(node_cpu_seconds_total{instance=~\"10.10.0.20:9100|10.10.0.21:9100\",mode!=\"idle\"}[2m])\n    )\n    * on(instance) group_left(nodename)\n    node_uname_info{instance=~\"10.10.0.20:9100|10.10.0.21:9100\"}\n  ),\n  \"node\", \"$1\", \"nodename\", \"(.*)\"\n)\n/\non(node)\nkube_node_status_allocatable{node=~\"rke2-worker-1|rke2-worker-2\",resource=\"cpu\",unit=\"core\"}",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "min": 0,
+              "max": 100,
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 17
+          },
+          "id": 10,
+          "pluginVersion": "11.0.0",
+          "title": "Workers RAM % node",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 *\nlabel_replace(\n  (\n    (\n      node_memory_MemTotal_bytes{instance=~\"10.10.0.20:9100|10.10.0.21:9100\"}\n      -\n      node_memory_MemAvailable_bytes{instance=~\"10.10.0.20:9100|10.10.0.21:9100\"}\n    )\n    * on(instance) group_left(nodename)\n    node_uname_info{instance=~\"10.10.0.20:9100|10.10.0.21:9100\"}\n  ),\n  \"node\", \"$1\", \"nodename\", \"(.*)\"\n)\n/\non(node)\nkube_node_status_allocatable{node=~\"rke2-worker-1|rke2-worker-2\",resource=\"memory\",unit=\"byte\"}",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ node }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "decimals": 0,
+              "noValue": "No data",
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 0,
+            "y": 25
+          },
+          "id": 11,
+          "pluginVersion": "11.0.0",
+          "title": "PG CPU > 80%",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 *\nsum by (pod) (\n  rate(container_cpu_usage_seconds_total{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\"}[2m])\n)\n/\nsum by (pod) (\n  kube_pod_container_resource_limits{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\",resource=\"cpu\",unit=\"core\"}\n)) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "decimals": 0,
+              "noValue": "No data",
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 6,
+            "y": 25
+          },
+          "id": 12,
+          "pluginVersion": "11.0.0",
+          "title": "PG RAM > 80%",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 *\nsum by (pod) (\n  container_memory_working_set_bytes{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\"}\n)\n/\nsum by (pod) (\n  kube_pod_container_resource_limits{namespace=\"blog-production\",pod=~\"pg-production-postgresql-primary-0|pg-production-postgresql-read-0|pg-production-postgresql-read-1\",container=\"postgresql\",resource=\"memory\",unit=\"byte\"}\n)) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "decimals": 0,
+              "noValue": "No data",
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 12,
+            "y": 25
+          },
+          "id": 13,
+          "pluginVersion": "11.0.0",
+          "title": "Worker CPU > 80%",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 *\nlabel_replace(\n  (\n    sum by(instance) (\n      rate(node_cpu_seconds_total{instance=~\"10.10.0.20:9100|10.10.0.21:9100\",mode!=\"idle\"}[2m])\n    )\n    * on(instance) group_left(nodename)\n    node_uname_info{instance=~\"10.10.0.20:9100|10.10.0.21:9100\"}\n  ),\n  \"node\", \"$1\", \"nodename\", \"(.*)\"\n)\n/\non(node)\nkube_node_status_allocatable{node=~\"rke2-worker-1|rke2-worker-2\",resource=\"cpu\",unit=\"core\"}) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "decimals": 0,
+              "noValue": "No data",
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 18,
+            "y": 25
+          },
+          "id": 14,
+          "pluginVersion": "11.0.0",
+          "title": "Worker RAM > 80%",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max((100 *\nlabel_replace(\n  (\n    (\n      node_memory_MemTotal_bytes{instance=~\"10.10.0.20:9100|10.10.0.21:9100\"}\n      -\n      node_memory_MemAvailable_bytes{instance=~\"10.10.0.20:9100|10.10.0.21:9100\"}\n    )\n    * on(instance) group_left(nodename)\n    node_uname_info{instance=~\"10.10.0.20:9100|10.10.0.21:9100\"}\n  ),\n  \"node\", \"$1\", \"nodename\", \"(.*)\"\n)\n/\non(node)\nkube_node_status_allocatable{node=~\"rke2-worker-1|rke2-worker-2\",resource=\"memory\",unit=\"byte\"}) > bool 80)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": [
+        "rke2",
+        "lab",
+        "bdd",
+        "postgresql"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-30m",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "RKE2 Production - BDD",
+      "uid": "rke2-lab-bdd",
+      "version": 1,
+      "weekStart": ""
+    }

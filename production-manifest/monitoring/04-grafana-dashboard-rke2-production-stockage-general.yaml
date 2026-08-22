@@ -1,0 +1,1290 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-rke2-lab-stockage-general
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  rke2-lab-stockage-general-dashboard.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "pluginVersion": "11.0.0",
+          "title": "Nodes RKE2",
+          "type": "text",
+          "options": {
+            "mode": "markdown",
+            "content": "# RKE2 Production - Stockage général\n\n| Node | IP LAN | Rôle |\n|---|---:|---|\n| `rke2-master-1` | `10.10.0.10` | control-plane / etcd / master |\n| `rke2-worker-1` | `10.10.0.20` | worker |\n| `rke2-worker-2` | `10.10.0.21` | worker |\n"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 0,
+            "y": 4
+          },
+          "id": 2,
+          "pluginVersion": "11.0.0",
+          "title": "Nodes Kubernetes",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "count(kube_node_info)",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 6,
+            "y": 4
+          },
+          "id": 3,
+          "pluginVersion": "11.0.0",
+          "title": "Root utilisé max",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"node-exporter\",mountpoint=\"/\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node-exporter\",mountpoint=\"/\",fstype!=\"\"}))",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 2147483648
+                  },
+                  {
+                    "color": "green",
+                    "value": 5368709120
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 12,
+            "y": 4
+          },
+          "id": 4,
+          "pluginVersion": "11.0.0",
+          "title": "Root libre min",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "min(node_filesystem_avail_bytes{job=\"node-exporter\",mountpoint=\"/\",fstype!=\"\"})",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 18,
+            "y": 4
+          },
+          "id": 5,
+          "pluginVersion": "11.0.0",
+          "title": "DiskPressure par node",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_node_status_condition{condition=\"DiskPressure\",status=\"true\"}",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ node }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 9
+          },
+          "id": 6,
+          "pluginVersion": "11.0.0",
+          "title": "Root utilisé par node (%)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "(100 * (1 - node_filesystem_avail_bytes{job=\"node-exporter\",mountpoint=\"/\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node-exporter\",mountpoint=\"/\",fstype!=\"\"})) * on(instance) group_left(nodename) node_uname_info",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ nodename }} - {{ instance }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 9
+          },
+          "id": 7,
+          "pluginVersion": "11.0.0",
+          "title": "Root libre par node",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "node_filesystem_avail_bytes{job=\"node-exporter\",mountpoint=\"/\",fstype!=\"\"} * on(instance) group_left(nodename) node_uname_info",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ nodename }} - {{ instance }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 17
+          },
+          "id": 8,
+          "pluginVersion": "11.0.0",
+          "title": "Inodes utilisés par node (%)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "(100 * (1 - node_filesystem_files_free{job=\"node-exporter\",mountpoint=\"/\",fstype!=\"\"} / node_filesystem_files{job=\"node-exporter\",mountpoint=\"/\",fstype!=\"\"})) * on(instance) group_left(nodename) node_uname_info",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ nodename }} - {{ instance }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 17
+          },
+          "id": 9,
+          "pluginVersion": "11.0.0",
+          "title": "Filesystem utilisé par mountpoint (%)",
+          "type": "bargauge",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "(100 * (1 - node_filesystem_avail_bytes{job=\"node-exporter\",fstype!=\"\",mountpoint!~\"/run.*|/var/lib/kubelet/pods.*\"} / node_filesystem_size_bytes{job=\"node-exporter\",fstype!=\"\",mountpoint!~\"/run.*|/var/lib/kubelet/pods.*\"})) * on(instance) group_left(nodename) node_uname_info",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ nodename }} {{ mountpoint }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 25
+          },
+          "id": 10,
+          "pluginVersion": "11.0.0",
+          "title": "Inventaire nodes / IP internes",
+          "type": "table",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_node_status_addresses{type=\"InternalIP\"}",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "{{ node }} {{ address }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "__name__": true,
+                  "endpoint": true,
+                  "instance": true,
+                  "job": true,
+                  "namespace": true,
+                  "pod": true,
+                  "service": true,
+                  "type": true
+                },
+                "indexByName": {
+                  "node": 0,
+                  "address": 1,
+                  "Value": 2
+                },
+                "renameByName": {
+                  "node": "node",
+                  "address": "ip_interne",
+                  "Value": "value"
+                }
+              }
+            }
+          ],
+          "options": {
+            "cellHeight": "sm",
+            "showHeader": true,
+            "footer": {
+              "show": false,
+              "reducer": [
+                "sum"
+              ],
+              "fields": ""
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 12,
+            "y": 25
+          },
+          "id": 11,
+          "pluginVersion": "11.0.0",
+          "title": "Ready par node",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "1 - kube_node_status_condition{condition=\"Ready\",status=\"true\"}",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ node }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 15,
+            "y": 25
+          },
+          "id": 12,
+          "pluginVersion": "11.0.0",
+          "title": "DiskPressure par node",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_node_status_condition{condition=\"DiskPressure\",status=\"true\"}",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ node }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 18,
+            "y": 25
+          },
+          "id": 13,
+          "pluginVersion": "11.0.0",
+          "title": "MemoryPressure par node",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_node_status_condition{condition=\"MemoryPressure\",status=\"true\"}",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ node }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK",
+                      "color": "green"
+                    },
+                    "1": {
+                      "text": "ALERTE",
+                      "color": "red"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 21,
+            "y": 25
+          },
+          "id": 14,
+          "pluginVersion": "11.0.0",
+          "title": "PIDPressure par node",
+          "type": "stat",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_node_status_condition{condition=\"PIDPressure\",status=\"true\"}",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ node }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 33
+          },
+          "id": 15,
+          "pluginVersion": "11.0.0",
+          "title": "Inventaire PVC blog-production",
+          "type": "table",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_persistentvolumeclaim_info{namespace=\"blog-production\"}",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "{{ persistentvolumeclaim }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "__name__": true,
+                  "created_by_kind": true,
+                  "created_by_name": true,
+                  "endpoint": true,
+                  "instance": true,
+                  "job": true,
+                  "pod": true,
+                  "service": true
+                },
+                "indexByName": {
+                  "namespace": 0,
+                  "persistentvolumeclaim": 1,
+                  "volumename": 2,
+                  "storageclass": 3,
+                  "Value": 4
+                },
+                "renameByName": {
+                  "namespace": "namespace",
+                  "persistentvolumeclaim": "pvc",
+                  "volumename": "volume_name",
+                  "storageclass": "storageclass",
+                  "Value": "value"
+                }
+              }
+            }
+          ],
+          "options": {
+            "cellHeight": "sm",
+            "showHeader": true,
+            "footer": {
+              "show": false,
+              "reducer": [
+                "sum"
+              ],
+              "fields": ""
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 41
+          },
+          "id": 16,
+          "pluginVersion": "11.0.0",
+          "title": "Capacité des PV",
+          "type": "bargauge",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_persistentvolume_capacity_bytes",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ persistentvolume }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 41
+          },
+          "id": 17,
+          "pluginVersion": "11.0.0",
+          "title": "Capacité des PV local-path",
+          "type": "bargauge",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kube_persistentvolume_capacity_bytes * on(persistentvolume) group_left(storageclass) kube_persistentvolume_info{storageclass=\"local-path\"}",
+              "format": "time_series",
+              "instant": true,
+              "legendFormat": "{{ persistentvolume }}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 49
+          },
+          "id": 18,
+          "pluginVersion": "11.0.0",
+          "title": "Disk read/write par node",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum by(instance) (rate(node_disk_read_bytes_total{job=\"node-exporter\",device=~\"dm-.+|sd.+|vd.+|xvd.+|nvme.+\"}[5m])) * on(instance) group_left(nodename) node_uname_info",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ nodename }} read",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum by(instance) (rate(node_disk_written_bytes_total{job=\"node-exporter\",device=~\"dm-.+|sd.+|vd.+|xvd.+|nvme.+\"}[5m])) * on(instance) group_left(nodename) node_uname_info",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ nodename }} write",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 49
+          },
+          "id": 19,
+          "pluginVersion": "11.0.0",
+          "title": "Disk I/O time par node (%)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum by(instance) (rate(node_disk_io_time_seconds_total{job=\"node-exporter\",device=~\"dm-.+|sd.+|vd.+|xvd.+|nvme.+\"}[5m])) * on(instance) group_left(nodename) node_uname_info",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{ nodename }}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 57
+          },
+          "id": 20,
+          "pluginVersion": "11.0.0",
+          "title": "Chemins locaux importants",
+          "type": "text",
+          "options": {
+            "mode": "markdown",
+            "content": "| Élément | Chemin |\n|---|---|\n| RKE2 containerd | `/var/lib/rancher/rke2/agent/containerd` |\n| RKE2 overlayfs | `/var/lib/rancher/rke2/agent/containerd/io.containerd.snapshotter.v1.overlayfs` |\n| RKE2 content/images | `/var/lib/rancher/rke2/agent/containerd/io.containerd.content.v1.content` |\n| local-path | `/opt/local-path-provisioner` |\n| assets | `/opt/local-path-provisioner/pvc-088cb347-ed4e-405e-9b4f-9d525bb83875_blog-production_blog-back-assets` |\n| uploads | `/opt/local-path-provisioner/pvc-217b2344-13c2-488d-8a63-d9d70092f032_blog-production_blog-back-uploads` |\n"
+          }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": [
+        "rke2",
+        "lab",
+        "stockage",
+        "volumes",
+        "nodes"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-30m",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "RKE2 Production - Stockage général",
+      "uid": "rke2-lab-stockage-general",
+      "version": 6,
+      "weekStart": ""
+    }
