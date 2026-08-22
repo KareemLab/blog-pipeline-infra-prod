@@ -1,0 +1,70 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: blog-back-fpm-network-policy
+  namespace: blog-production
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: blog-back-fpm
+
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: blog-back-nginx
+      ports:
+        - protocol: TCP
+          port: 9000
+
+  egress:
+    # FPM -> PostgreSQL via Service ClusterIP
+    #
+    # Homelab :
+    #   ancien Service postgres : 10.43.142.208
+    #   Service pg-lab primary  : 10.43.29.229
+    #
+    # GCP :
+    #   Service pg-production PostgreSQL Primary / Writer
+    #   ClusterIP : 10.43.120.196
+    - to:
+        - ipBlock:
+            cidr: 10.43.120.196/32
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # FPM -> PostgreSQL Primary via Pod selector
+    #
+    # Cette règle pourra être conservée si les labels du StatefulSet
+    # PostgreSQL GCP restent identiques à ceux du homelab.
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: pg-production
+              app.kubernetes.io/name: postgresql
+              app.kubernetes.io/component: primary
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # FPM -> CoreDNS Kubernetes
+    # On cible les Pods CoreDNS par namespace + label plutôt que
+    # la ClusterIP 10.43.0.10, car le trafic peut être DNATé vers
+    # les IP réelles des Pods CoreDNS avant l'évaluation de la policy.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

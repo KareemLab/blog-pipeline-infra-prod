@@ -75,3 +75,7 @@ argocd/rendered/
 argocd/drafts/
 __pycache__/
 *.pyc
+production-manifest/postgresql/blog-back-secret-homelab.json
+production-manifest/postgresql/blog-back-secret-gcp.json
+production-manifest/postgresql/blog-back-env-file-gcp.env
+tmp/

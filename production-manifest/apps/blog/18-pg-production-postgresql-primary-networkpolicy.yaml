@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pg-production-postgresql-primary-network-policy
+  namespace: blog-production
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: pg-production
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # FPM -> PostgreSQL writer
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: blog-back-fpm
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # PostgreSQL readers -> PostgreSQL writer pour la réplication
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: pg-production
+              app.kubernetes.io/name: postgresql
+              app.kubernetes.io/component: read
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Monitoring -> exporter PostgreSQL si Prometheus le scrape plus tard
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9187

@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: blog-back-assets-nfs-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-manual
+  nfs:
+    server: 10.10.0.21
+    path: /srv/nfs/rke2-lab/blog-back/assets
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: blog-back-assets-nfs
+  namespace: blog-production
+  labels:
+    app.kubernetes.io/name: blog-back-assets-nfs
+    app.kubernetes.io/part-of: blog-back
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-manual
+  volumeName: blog-back-assets-nfs-pv
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: blog-back-uploads-nfs-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-manual
+  nfs:
+    server: 10.10.0.21
+    path: /srv/nfs/rke2-lab/blog-back/uploads
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: blog-back-uploads-nfs
+  namespace: blog-production
+  labels:
+    app.kubernetes.io/name: blog-back-uploads-nfs
+    app.kubernetes.io/part-of: blog-back
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-manual
+  volumeName: blog-back-uploads-nfs-pv
+  resources:
+    requests:
+      storage: 1Gi
